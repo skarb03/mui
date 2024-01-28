@@ -28,6 +28,14 @@ const samplePage = {
           url: '/tables',
           icon: PlusOutlined,
           target: false
+        },
+        {
+          id: 'paginationTable',
+          title: <FormattedMessage id="paginationTable" />,
+          type: 'item',
+          url: '/paginationTable',
+          icon: PlusOutlined,
+          target: false
         }
       ]}
   ]

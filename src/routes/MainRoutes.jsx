@@ -17,7 +17,7 @@ const AppContactUS = Loadable(lazy(() => import('pages/contact-us')));
 // render - sample page
 const SamplePage = Loadable(lazy(() => import('pages/extra-pages/sample-page')));
 const Tables = Loadable(lazy(() => import('pages/tables/Tables')));
-
+const PaginationTable = Loadable(lazy(() => import('pages/tables/PaginationTable')));
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -40,6 +40,16 @@ const MainRoutes = {
         {
           path: 'tables',
           element: <Tables />
+        }
+      ]
+    },
+    {
+      path: '/',
+      element: <DashboardLayout />,
+      children: [
+        {
+          path: 'paginationTable',
+          element: <PaginationTable />
         }
       ]
     },
@@ -79,3 +89,4 @@ const MainRoutes = {
 };
 
 export default MainRoutes;
+
