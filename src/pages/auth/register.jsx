@@ -34,7 +34,7 @@ const Register = () => {
           <FirebaseRegister />
         </Grid>
       </Grid>
-    </AuthWrapper>
+   </AuthWrapper>
   );
 };
 

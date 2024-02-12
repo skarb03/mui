@@ -1,147 +1,90 @@
-import PropTypes from 'prop-types';
-import { useMemo } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
+import { randomInt, randomUserName } from '@mui/x-data-grid-generator';
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
+import { useState } from 'react';
+import { Input } from '@mui/material';
 
-// material-ui
-import { Chip, Grid, Table, TableBody, TableContainer, TableCell, TableHead, TableRow, Stack, Box, Divider } from '@mui/material';
+const columns = [
+  { field: 'id' },
+  {
+    field: 'username',
+    width: 150,
+    renderCell: (value) => {
+      // console.log(value.row.username)
+      return (
+        <div>
+          <Input />
+        </div>
+      );
+    }
+    
+  },
+  { field: 'age', width: 80, type: 'number' }
+];
 
-// third-party
-import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender } from '@tanstack/react-table';
+let idCounter = 0;
+const createRandomRow = () => {
+  idCounter += 1;
+  return { id: idCounter, username: randomUserName(), age: randomInt(10, 80) };
+};
 
-// project-import
-import ScrollX from 'components/ScrollX';
-import MainCard from 'components/MainCard';
-import LinearWithLabel from 'components/@extended/progress/LinearWithLabel';
-import { TablePagination } from 'components/third-party/react-table';
-import makeData from 'data/react-table';
-import { useQuery } from '@tanstack/react-query';
-// ==============================|| REACT TABLE ||============================== //
+export default function UpdateRowsProp() {
+  const [rows, setRows] = useState(() => [createRandomRow(), createRandomRow(), createRandomRow(), createRandomRow()]);
 
-function ReactTable({ data, columns }) {
-  
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    debugTable: true
-  });
+  const handleUpdateRow = () => {
+    if (rows.length === 0) {
+      return;
+    }
+    setRows((prevRows) => {
+      const rowToUpdateIndex = randomInt(0, rows.length - 1);
 
-  let headers = [];
-  table.getAllColumns().map((columns) =>
-    headers.push({
-      label: typeof columns.columnDef.header === 'string' ? columns.columnDef.header : '#',
-      // @ts-ignore
-      key: columns.columnDef.accessorKey
-    })
-  );
-  const title = 'test';
+      return prevRows.map((row, index) => (index === rowToUpdateIndex ? { ...row, username: randomUserName() } : row));
+    });
+  };
 
+  const handleUpdateAllRows = () => {
+    setRows(rows.map((row) => ({ ...row, username: randomUserName() })));
+  };
+
+  const handleDeleteRow = () => {
+    if (rows.length === 0) {
+      return;
+    }
+    setRows((prevRows) => {
+      const rowToDeleteIndex = randomInt(0, prevRows.length - 1);
+      return [...rows.slice(0, rowToDeleteIndex), ...rows.slice(rowToDeleteIndex + 1)];
+    });
+  };
+
+  const handleAddRow = () => {
+    setRows((prevRows) => [...prevRows, [createRandomRow()]]);
+  };
+  const processRowUpdate = (ab, sd) => {
+    console.log('old', ab);
+    console.log('new', sd);
+  };
   return (
-    <MainCard title={title} content={false}>
-      <ScrollX>
-        <Stack>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableCell key={header.id} {...header.column.columnDef.meta}>
-                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHead>
-              <TableBody>
-                {table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} {...cell.column.columnDef.meta}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <Divider />
-          <Box sx={{ p: 2 }}>
-            <TablePagination
-              {...{
-                setPageSize: table.setPageSize,
-                setPageIndex: table.setPageIndex,
-                getState: table.getState,
-                getPageCount: table.getPageCount
-              }}
-            />
-          </Box>
-        </Stack>
-      </ScrollX>
-    </MainCard>
+    <Box sx={{ width: '100%' }}>
+      <Stack direction="row" spacing={1}>
+        <Button size="small" onClick={handleUpdateRow}>
+          Update a row
+        </Button>
+        
+        <Button size="small" onClick={handleUpdateAllRows}>
+          Update all rows
+        </Button>
+        <Button size="small" onClick={handleDeleteRow}>
+          Delete a row
+        </Button>
+        <Button size="small" onClick={handleAddRow}>
+          Add a row
+        </Button>
+      </Stack>
+      <Box sx={{ height: 400, mt: 1 }}>
+        <DataGrid rows={rows} columns={columns} processRowUpdate={processRowUpdate} />
+      </Box>
+    </Box>
   );
 }
-
-ReactTable.propTypes = {
-  columns: PropTypes.array,
-  data: PropTypes.array,
-  top: PropTypes.bool
-};
-
-// ==============================|| REACT TABLE - PAGINATION ||============================== //
-
-const PaginationTable = () => {
-  const data = makeData(100);
-
-  const columns = useMemo(
-    () => [
-      {
-        header: 'Name',
-        accessorKey: 'fullName'
-      },
-      {
-        header: 'Email',
-        accessorKey: 'email'
-      },
-      {
-        header: 'Age',
-        accessorKey: 'age',
-        meta: {
-          className: 'cell-right'
-        }
-      },
-      {
-        header: 'Status',
-        accessorKey: 'status',
-        cell: (cell) => {
-          switch (cell.getValue()) {
-            case 'Complicated':
-              return <Chip color="error" label="Complicated" size="small" variant="light" />;
-            case 'Relationship':
-              return <Chip color="success" label="Relationship" size="small" variant="light" />;
-            case 'Single':
-            default:
-              return <Chip color="info" label="Single" size="small" variant="light" />;
-          }
-        }
-      },
-      {
-        header: 'Profile Progress',
-        accessorKey: 'progress',
-        cell: (cell) => <LinearWithLabel value={cell.getValue()} sx={{ minWidth: 75 }} />
-      }
-    ],
-    []
-  );
-
-  return (
-    <Grid container spacing={3}>
-      <Grid item xs={12}>
-        <ReactTable {...{ data, columns }} />
-      </Grid>
-    </Grid>
-  );
-};
-
-export default PaginationTable;
